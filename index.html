@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#6bbde0">
+<title>Ruma's Little Universe ✨</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+:root{
+  --sky:#91d9f5;
+  --sky-soft:#b8e6fa;
+  --sky-pale:#d6f0fb;
+  --sky-deep:#5bbfe0;
+  --peri:#8e9cf5;
+  --lav:#b9a4f5;
+  --yellow:#ffe66d;
+  --pink:#f5a8c8;
+  --mint:#c5e9c5;
+  --ink:#1e3a4f;
+  --muted:#5a7a8e;
+  --paper:#f4fbff;
+  --line:#c5e5f5;
+  --shadow:0 12px 32px #2a6a9020;
+  --shadow-sm:0 5px 16px #2a6a9015;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  color:var(--ink);
+  font-family:'Nunito',Arial,sans-serif;
+  background:#e8f6fd;
+  background-image:radial-gradient(#a8d8f0 1px,transparent 1px);
+  background-size:22px 22px;
+  min-height:100vh;
+}
+button{font:inherit;cursor:pointer}
+
+/* ══════════════════════════════
+   AUTH SCREEN
+══════════════════════════════ */
+#authScreen{
+  min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+}
+.auth-box{
+  background:#fff;
+  border:2.5px solid white;
+  border-radius:32px;
+  padding:46px 40px 40px;
+  width:100%;max-width:420px;
+  box-shadow:0 20px 60px #2a6a9028;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+.auth-box::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;height:6px;
+  background:linear-gradient(90deg,#91d9f5,#b9a4f5,#ffe66d,#f5a8c8,#91d9f5);
+  background-size:300% 100%;
+  animation:shimmer 4s linear infinite;
+}
+@keyframes shimmer{0%{background-position:0% 0}100%{background-position:300% 0}}
+.auth-emoji{font-size:52px;margin-bottom:14px;display:block}
+.auth-box h1{
+  font-family:'Playfair Display',Georgia,serif;
+  font-size:28px;font-weight:400;
+  color:#2a6a90;margin-bottom:6px;
+}
+.auth-box .auth-sub{
+  color:var(--muted);font-size:13px;
+  margin-bottom:28px;line-height:1.6;
+}
+.auth-field{
+  text-align:left;margin-bottom:16px;
+}
+.auth-field label{
+  display:block;font-size:12px;font-weight:700;
+  color:var(--muted);letter-spacing:.5px;
+  margin-bottom:5px;text-transform:uppercase;
+}
+.auth-field input{
+  width:100%;
+  border:1.5px solid var(--line);
+  border-radius:14px;
+  padding:13px 16px;
+  background:#fafeff;
+  color:var(--ink);
+  font:14px 'Nunito',sans-serif;
+  transition:.18s;
+}
+.auth-field input:focus{
+  outline:none;
+  border-color:var(--sky-deep);
+  background:#fff;
+  box-shadow:0 0 0 3px #5bbfe020;
+}
+.auth-btn{
+  width:100%;
+  border:0;border-radius:16px;
+  background:linear-gradient(135deg,#5bbfe0,#4aadd0);
+  color:white;
+  padding:14px;
+  font-size:15px;font-weight:800;
+  box-shadow:0 6px 20px #5bbfe035;
+  transition:.2s;
+  margin-top:8px;
+  letter-spacing:.3px;
+}
+.auth-btn:hover{filter:brightness(1.07);transform:translateY(-1px)}
+.auth-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.auth-error{
+  background:#fff0f0;border:1.5px solid #f5a8a8;
+  border-radius:12px;padding:11px 14px;
+  color:#a84040;font-size:13px;
+  margin-top:14px;display:none;
+}
+.auth-note{
+  color:var(--muted);font-size:11px;
+  margin-top:20px;line-height:1.6;
+}
+
+/* ══════════════════════════════
+   MAIN APP (hidden until auth)
+══════════════════════════════ */
+#appScreen{display:none}
+
+/* ── Layout ── */
+.wrap{max-width:1140px;margin:auto;padding:22px 18px 60px}
+
+/* ── Top bar ── */
+.topbar{
+  display:flex;justify-content:space-between;align-items:center;
+  gap:12px;margin-bottom:18px;
+  color:var(--muted);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;
+  flex-wrap:wrap;
+}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.stamp{
+  border:1.5px dashed var(--sky-deep);
+  padding:7px 14px;border-radius:30px;
+  background:#ffffffcc;color:var(--sky-deep);
+  font-weight:700;font-size:11px;
+}
+.user-chip{
+  display:flex;align-items:center;gap:7px;
+  background:#ffffffcc;border:1.5px solid var(--line);
+  border-radius:30px;padding:6px 12px;
+  font-size:11px;font-weight:700;color:var(--ink);
+}
+.user-chip .dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--sky-deep);flex-shrink:0;
+}
+.user-chip.creator .dot{background:#5bbfe0}
+.user-chip.ruma .dot{background:#b9a4f5}
+.logout-btn{
+  border:1.5px solid var(--line);background:#ffffffcc;
+  border-radius:30px;padding:6px 12px;
+  color:var(--muted);font-size:11px;font-weight:700;
+  transition:.18s;
+}
+.logout-btn:hover{background:#fff0f0;border-color:#f5a8a8;color:#a84040}
+
+/* ── Hero ── */
+.hero{
+  position:relative;overflow:hidden;text-align:center;
+  background:linear-gradient(145deg,#ffffff 0%,#e0f5ff 40%,#d4edfc 70%,#eee8ff 100%);
+  border:2.5px solid white;border-radius:36px;
+  padding:52px 24px 44px;box-shadow:var(--shadow);
+}
+.hero-deco{position:absolute;font-size:48px;opacity:.75;pointer-events:none}
+.hero-deco.d1{left:6%;top:16%;color:#ffe66d;transform:rotate(-16deg)}
+.hero-deco.d2{right:7%;top:14%;color:#91d9f5;transform:rotate(14deg);font-size:40px}
+.hero-deco.d3{left:9%;bottom:12%;color:#b9a4f5;font-size:34px}
+.hero-deco.d4{right:8%;bottom:16%;color:#f5a8c8;font-size:38px;transform:rotate(10deg)}
+.kicker{
+  display:inline-block;font-size:11px;letter-spacing:3px;text-transform:uppercase;
+  font-weight:800;color:var(--sky-deep);margin-bottom:14px;
+}
+h1{
+  font-family:'Playfair Display',Georgia,serif;
+  font-size:clamp(44px,9vw,82px);font-weight:400;line-height:.96;
+  color:#2a6a90;margin-bottom:14px;
+}
+h1 em{font-style:italic;color:#5bbfe0}
+.subtitle{
+  font-family:'Playfair Display',Georgia,serif;
+  font-style:italic;color:var(--muted);font-size:17px;margin-bottom:16px;
+}
+.hero-note{
+  max-width:600px;margin:0 auto 26px;
+  line-height:1.75;font-size:15px;color:#3d6e85;
+}
+.tape{
+  display:inline-block;background:var(--yellow);
+  padding:9px 20px;transform:rotate(-2deg);
+  font-size:11px;font-weight:800;letter-spacing:1.5px;
+  box-shadow:0 4px 12px #c9a52030;border-radius:3px;color:#4a3800;
+}
+/* personalised greeting inside hero */
+.hero-greeting{
+  display:inline-block;
+  background:#ffffffaa;border:1.5px solid var(--line);
+  border-radius:30px;padding:7px 16px;
+  font-size:13px;font-weight:700;color:#2a6a90;
+  margin-bottom:20px;
+}
+
+/* ── Section heading ── */
+.section-title{
+  display:flex;align-items:center;gap:14px;margin:36px 4px 18px;
+}
+.section-title h2{
+  font-family:'Playfair Display',Georgia,serif;
+  font-size:22px;font-weight:400;color:var(--muted);white-space:nowrap;
+}
+.section-title span{height:2px;background:var(--line);flex:1}
+
+/* ── Grid of tiles ── */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.tile{
+  min-height:185px;text-align:left;
+  border:2.5px solid white;border-radius:26px;padding:22px 20px;
+  box-shadow:var(--shadow);position:relative;
+  transition:transform .2s,box-shadow .2s;overflow:hidden;color:var(--ink);
+}
+.tile:hover{transform:translateY(-5px) rotate(-.3deg);box-shadow:0 20px 40px #2a6a9025}
+.tile .emoji{font-size:34px;display:block;margin-bottom:14px}
+.tile strong{
+  font-family:'Playfair Display',Georgia,serif;
+  font-size:18px;font-weight:400;display:block;max-width:230px;line-height:1.3;
+}
+.tile small{display:block;color:#4a6a7a;line-height:1.5;margin-top:9px;font-size:12px;max-width:240px}
+.tile:after{content:"✦";position:absolute;font-size:30px;right:14px;bottom:10px;opacity:.28}
+
+.tile:nth-child(1){background:linear-gradient(140deg,#c8ecfb,#a8def8)}
+.tile:nth-child(2){background:linear-gradient(140deg,#fff3b5,#ffe980)}
+.tile:nth-child(3){background:linear-gradient(140deg,#c6d8ff,#b2cbff)}
+.tile:nth-child(4){background:linear-gradient(140deg,#b8e8ff,#9adaf8)}
+.tile:nth-child(5){background:linear-gradient(140deg,#f8c8de,#f0a8c8)}
+.tile:nth-child(6){background:linear-gradient(140deg,#b5dffb,#8fd0f5)}
+.tile:nth-child(7){background:linear-gradient(140deg,#c5edc5,#a8dba8)}
+
+/* ── Footer ── */
+.footer{text-align:center;color:var(--muted);font-size:12px;margin:32px 0;line-height:1.9}
+.footer strong{color:var(--sky-deep)}
+
+/* ── Panels ── */
+.panel{
+  display:none;margin-top:22px;background:#fffefa;
+  border:2px solid white;border-radius:28px;padding:28px;
+  box-shadow:var(--shadow);animation:rise .28s ease;
+}
+.panel.active{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.panel-head{
+  display:flex;justify-content:space-between;gap:14px;align-items:start;
+  border-bottom:2px dashed var(--line);padding-bottom:18px;margin-bottom:22px;
+}
+.panel-head h2{
+  font-family:'Playfair Display',Georgia,serif;
+  font-weight:400;font-size:28px;color:#2a6a90;margin-bottom:5px;
+}
+.panel-head .sub{color:var(--muted);font-size:13px}
+.back{
+  border:1.5px solid var(--line);background:#fff;border-radius:25px;
+  padding:9px 16px;color:var(--muted);font-size:12px;font-weight:700;
+  white-space:nowrap;transition:.18s;
+}
+.back:hover{background:var(--sky-pale);color:var(--sky-deep)}
+
+/* ── Cards ── */
+.card{
+  background:#fff;border:1.5px solid var(--line);
+  border-radius:20px;padding:20px;margin:14px 0;box-shadow:var(--shadow-sm);
+}
+.card h3{
+  font-family:'Playfair Display',Georgia,serif;
+  font-size:20px;font-weight:400;color:#2a6a90;margin-bottom:10px;
+}
+.card p{line-height:1.65;font-size:14px;color:#3d5a6e;margin-bottom:10px}
+
+/* ── Buttons ── */
+.btn{
+  border:0;border-radius:25px;background:#5bbfe0;color:white;
+  padding:11px 20px;margin:6px 5px 4px 0;font-size:13px;font-weight:700;
+  box-shadow:0 4px 12px #5bbfe030;transition:.2s;
+}
+.btn:hover{filter:brightness(1.07);transform:translateY(-1px)}
+.btn.yellow{background:#e5bd35;color:#3a2800}
+.btn.purple{background:#8e9cf5;color:white}
+.btn.pink{background:#e98eb5;color:white}
+.btn.mint{background:#66aa77;color:white}
+.btn.sky{background:#3aa8d4;color:white}
+.btn.sm{padding:8px 14px;font-size:12px}
+
+/* ── Inputs ── */
+input,textarea,select{
+  width:100%;border:1.5px solid var(--line);border-radius:14px;
+  padding:12px 14px;background:#fafeff;color:var(--ink);
+  font:14px 'Nunito',sans-serif;margin:7px 0;transition:.18s;
+}
+input:focus,textarea:focus{
+  outline:none;border-color:var(--sky-deep);background:#fff;
+  box-shadow:0 0 0 3px #5bbfe020;
+}
+textarea{min-height:95px;resize:vertical}
+.muted{color:var(--muted);font-size:12px;margin-top:5px}
+
+/* ── Photo wall ── */
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.photo{background:#fff;padding:9px 9px 24px;box-shadow:0 6px 16px #2a6a9018;transform:rotate(-1.5deg);border-radius:4px}
+.photo:nth-child(2){transform:rotate(2deg)}.photo:nth-child(3){transform:rotate(-2deg)}
+.photo img{width:100%;height:120px;object-fit:cover;background:var(--sky-pale);border-radius:3px;display:block}
+.photo label{font-size:11px;color:var(--muted);display:block;text-align:center;margin-top:8px;font-style:italic}
+.photo input[type=file]{font-size:11px;margin:4px 0 0}
+
+/* ── Memory / song items ── */
+.memory-item{
+  border-left:4px solid var(--sky-deep);padding:11px 14px;margin:12px 0;
+  background:var(--sky-pale);border-radius:0 14px 14px 0;overflow-wrap:anywhere;
+}
+.memory-item b{display:block;margin-bottom:4px;color:#2a6a90;font-size:14px}
+
+/* ── Choices / results ── */
+.choice{
+  display:inline-block;border:1.5px solid var(--line);border-radius:30px;
+  padding:10px 16px;margin:5px 4px;background:#fff;color:var(--ink);
+  font-size:13px;font-weight:600;transition:.18s;
+}
+.choice:focus,.choice:hover{background:var(--sky-pale);border-color:var(--sky-deep)}
+.result{
+  background:var(--sky-pale);border-radius:16px;padding:17px 20px;
+  margin-top:14px;line-height:1.75;font-size:14px;border-left:3px solid var(--sky-deep);
+}
+.letter{
+  background:#fffbe8;border:1.5px dashed #d5b94d;border-radius:18px;
+  padding:24px;line-height:1.9;
+  font-family:'Playfair Display',Georgia,serif;font-style:italic;font-size:15px;color:#4a3c10;
+}
+.notice{
+  background:#e4f5ff;border:1.5px solid #90cfec;border-radius:14px;
+  padding:13px 16px;font-size:13px;line-height:1.65;color:#1e4a62;margin-bottom:14px;
+}
+.notice::before{content:"💙 ";font-style:normal}
+
+/* ── Open When grid ── */
+#openwhen .grid .tile:nth-child(1){background:linear-gradient(140deg,#c0e8ff,#a2d8f8)}
+#openwhen .grid .tile:nth-child(2){background:linear-gradient(140deg,#c8d8ff,#b4caff)}
+#openwhen .grid .tile:nth-child(3){background:linear-gradient(140deg,#b5e9ff,#8fdcf8)}
+#openwhen .grid .tile:nth-child(4){background:linear-gradient(140deg,#fff3b5,#ffe580)}
+#openwhen .grid .tile:nth-child(5){background:linear-gradient(140deg,#c5edc5,#a8dba8)}
+#openwhen .grid .tile:nth-child(6){background:linear-gradient(140deg,#f8c0d8,#f0a4c4)}
+.open-letter{
+  background:#fffbe8;border:1.5px dashed #d5b94d;border-radius:18px;
+  padding:26px;margin-top:18px;line-height:1.9;
+  font-family:'Playfair Display',Georgia,serif;font-style:italic;font-size:15px;color:#4a3c10;
+  animation:rise .3s ease;
+}
+
+/* ── Loading overlay ── */
+#loadingScreen{
+  position:fixed;inset:0;
+  background:#e8f6fd;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:16px;z-index:1000;
+  transition:opacity .4s;
+}
+.spinner{
+  width:44px;height:44px;
+  border:4px solid var(--sky-pale);
+  border-top-color:var(--sky-deep);
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loadingScreen p{color:var(--muted);font-size:13px;font-weight:600}
+
+/* ── Responsive ── */
+@media(max-width:760px){
+  .grid{grid-template-columns:repeat(2,1fr)}.tile{min-height:165px;padding:16px}
+  .photo-grid{grid-template-columns:1fr 1fr}.panel{padding:18px}
+  h1{font-size:clamp(38px,10vw,60px)}
+  .auth-box{padding:36px 24px 32px}
+}
+@media(max-width:430px){
+  .grid{gap:10px}.tile strong{font-size:15px}.tile small{font-size:11px}
+  .hero{padding:38px 14px 32px}.hero-deco{display:none}
+  .panel-head{flex-direction:column;gap:10px}.back{align-self:flex-start}
+  .topbar{font-size:9px}
+}
+</style>
+</head>
+<body>
+
+<!-- Loading screen -->
+<div id="loadingScreen">
+  <div style="font-size:40px">💙</div>
+  <div class="spinner"></div>
+  <p>Opening your little universe…</p>
+</div>
+
+<!-- ══════════════════════════════
+     AUTH SCREEN
+══════════════════════════════ -->
+<div id="authScreen">
+  <div class="auth-box">
+    <span class="auth-emoji">🌍</span>
+    <h1>Ruma's Little Universe</h1>
+    <p class="auth-sub">A little world made just for you.<br>Sign in to enter ✨</p>
+
+    <div class="auth-field">
+      <label>Email</label>
+      <input type="email" id="authEmail" placeholder="your@email.com" autocomplete="email">
+    </div>
+    <div class="auth-field">
+      <label>Password</label>
+      <input type="password" id="authPassword" placeholder="••••••••" autocomplete="current-password">
+    </div>
+
+    <button class="auth-btn" id="loginBtn" onclick="signIn()">Enter my universe →</button>
+    <div class="auth-error" id="authError"></div>
+    <p class="auth-note">This is a private space — only invited people can sign in.</p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     MAIN APP
+══════════════════════════════ -->
+<div id="appScreen">
+<div class="wrap">
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <span>✦ a tiny corner of the internet</span>
+      <span class="stamp">06.12.26</span>
+    </div>
+    <div class="topbar-right">
+      <div class="user-chip" id="userChip">
+        <span class="dot"></span>
+        <span id="userChipName">…</span>
+      </div>
+      <button class="logout-btn" onclick="signOut()">Sign out</button>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <header class="hero">
+    <span class="hero-deco d1">✦</span>
+    <span class="hero-deco d2">☁</span>
+    <span class="hero-deco d3">🌸</span>
+    <span class="hero-deco d4">⭐</span>
+    <div class="kicker">A little world made just for you</div>
+    <h1>Ruma's<br><em>Little Universe</em></h1>
+    <div id="heroGreeting" class="hero-greeting" style="display:none"></div>
+    <div class="subtitle">For your birthday, your memories, and all the in-between days.</div>
+    <p class="hero-note">A colorful little corner for big laughs, old stories, new beginnings, and reminders that you are loved in every era.</p>
+    <div class="tape">YOUR UNIVERSE. YOUR RULES. ✨</div>
+  </header>
+
+  <!-- Section heading -->
+  <div class="section-title" id="mainHeading"><span></span><h2>Choose your little escape</h2><span></span></div>
+
+  <!-- Home grid -->
+  <main class="grid" id="homeGrid">
+    <button class="tile" onclick="openPanel('stories')">
+      <span class="emoji">📸</span>
+      <strong>Our Stories, Memories & Songs</strong>
+      <small>Our favorite moments, iconic quotes and songs that sound like us.</small>
+    </button>
+    <button class="tile" onclick="openPanel('birthday')">
+      <span class="emoji">🎂</span>
+      <strong>25 Birthday</strong>
+      <small>A birthday hub made to celebrate YOU, your wishes and your next chapter.</small>
+    </button>
+    <button class="tile" onclick="openPanel('play')">
+      <span class="emoji">🎲</span>
+      <strong>Let's Play</strong>
+      <small>Silly questions, bestie games and absolutely no serious business.</small>
+    </button>
+    <button class="tile" onclick="openPanel('chitchat')">
+      <span class="emoji">💬</span>
+      <strong>Let's Chitchat</strong>
+      <small>Random thoughts, little conversations and things we should talk about.</small>
+    </button>
+    <button class="tile" onclick="openPanel('bridal')">
+      <span class="emoji">👰🏻‍♀️</span>
+      <strong>Ruma's Bridal Era</strong>
+      <small>Wedding planning, but with room for breaks, joy and being the bride.</small>
+    </button>
+    <button class="tile" onclick="openPanel('challenges')">
+      <span class="emoji">🏆</span>
+      <strong>Challenges</strong>
+      <small>Little missions to make ordinary days more fun.</small>
+    </button>
+    <button class="tile" onclick="openPanel('openwhen')">
+      <span class="emoji">💌</span>
+      <strong>Open When...</strong>
+      <small>Letters for the days when you need a laugh, a hug or a reminder.</small>
+    </button>
+  </main>
+
+  <!-- ════ PANEL: STORIES ════ -->
+  <section id="stories" class="panel">
+    <div class="panel-head">
+      <div><h2>Our Stories, Memories & Songs 📸</h2><div class="sub">A scrapbook of us, one little piece at a time.</div></div>
+      <button class="back" onclick="home()">← Home</button>
+    </div>
+    <div class="card">
+      <h3>Our little photo wall</h3>
+      <p>Choose photos to preview them here. Permanent shared photo storage will be connected in the next phase.</p>
+      <div class="photo-grid">
+        <div class="photo"><img id="photo1" src="" alt="" style="background:var(--sky-pale)"><label>Our iconic moment</label><input type="file" accept="image/*" onchange="preview(this,'photo1')"></div>
+        <div class="photo"><img id="photo2" src="" alt="" style="background:#fff3e0"><label>The laughing one</label><input type="file" accept="image/*" onchange="preview(this,'photo2')"></div>
+        <div class="photo"><img id="photo3" src="" alt="" style="background:#f0eeff"><label>Just us ✨</label><input type="file" accept="image/*" onchange="preview(this,'photo3')"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Memory lane</h3>
+      <p>Write a tiny story you never want us to forget.</p>
+      <input id="memoryTitle" placeholder="Memory title">
+      <textarea id="memoryText" placeholder="Tell the story..."></textarea>
+      <button class="btn sky" onclick="addMemory()">Pin this memory 📌</button>
+      <div id="memoryList" style="margin-top:14px"></div>
+    </div>
+    <div class="card">
+      <h3>Our soundtrack 🎧</h3>
+      <p>Add a Spotify, YouTube or other song link.</p>
+      <div id="songList" style="margin-bottom:10px"></div>
+      <input id="songName" placeholder="Song title + artist">
+      <input id="songUrl" placeholder="Paste song link (Spotify, YouTube…)">
+      <input id="songNote" placeholder="Why this song is special">
+      <button class="btn purple" onclick="addSong()">Add to our soundtrack 🎵</button>
+    </div>
+    <div class="card">
+      <h3>Who said it? 🤭</h3>
+      <blockquote style="border-left:3px solid var(--sky);padding-left:14px;font-style:italic;color:#2a6a90;margin:10px 0">"[Add one of your unforgettable quotes here]"</blockquote>
+      <button class="btn yellow" onclick="document.getElementById('quoteAnswer').hidden=false">Reveal the answer</button>
+      <p id="quoteAnswer" hidden style="margin-top:12px">It was: <b>[Add the answer here]</b> 😂</p>
+    </div>
+  </section>
+
+  <!-- ════ PANEL: BIRTHDAY ════ -->
+  <section id="birthday" class="panel">
+    <div class="panel-head">
+      <div><h2>25 Birthday 🎂</h2><div class="sub">A whole new trip around the sun, Ruma!</div></div>
+      <button class="back" onclick="home()">← Home</button>
+    </div>
+    <div class="card">
+      <div class="kicker" style="font-size:10px;letter-spacing:2px;color:var(--sky-deep);font-weight:800;text-transform:uppercase;margin-bottom:12px">A birthday note</div>
+      <div class="letter">Happy 25th birthday, Ruma! I hope this chapter brings you unexpected joy, brave beginnings, belly laughs, beautiful memories, and moments that remind you how loved you are. Today is not about what needs to get done. Today is about YOU. ♡<br><br>Love you endlessly.</div>
+      <p class="muted" style="margin-top:10px">Replace this with your own words before gifting.</p>
+    </div>
+    <div class="card">
+      <h3>Make a wish ✨</h3>
+      <p>What's one thing you want more of in your 25th year?</p>
+      <textarea id="wish" placeholder="A little wish for this new chapter..."></textarea>
+      <button class="btn" onclick="saveText('wish','wishSaved')">Save my wish</button>
+      <div id="wishSaved" class="muted"></div>
+    </div>
+    <div class="card">
+      <h3>Your birthday surprise 🎁</h3>
+      <p>Pick a number to reveal a tiny birthday mission.</p>
+      <button class="choice" onclick="reveal('birthdayResult',0)">1</button>
+      <button class="choice" onclick="reveal('birthdayResult',1)">2</button>
+      <button class="choice" onclick="reveal('birthdayResult',2)">3</button>
+      <div id="birthdayResult" class="result" hidden></div>
+    </div>
+    <div class="card">
+      <h3>A birthday toast 🥂</h3>
+      <p>Here's to 25: more confidence, more adventures, more softness, more laughter, and more choosing yourself.</p>
+    </div>
+  </section>
+
+  <!-- ════ PANEL: PLAY ════ -->
+  <section id="play" class="panel">
+    <div class="panel-head">
+      <div><h2>Let's Play 🎲</h2><div class="sub">No scores. No pressure. Just fun.</div></div>
+      <button class="back" onclick="home()">← Home</button>
+    </div>
+    <div class="card">
+      <h3>This or That?</h3>
+      <p>Pick your vibe today.</p>
+      <button class="choice" id="optionA" onclick="chooseThis(0)">Coffee date ☕</button>
+      <button class="choice" id="optionB" onclick="chooseThis(1)">Pajama day 🧸</button>
+      <div id="thisThatResult" class="muted" style="margin-top:8px"></div>
+      <br><button class="btn sm" onclick="nextThis()">Next one →</button>
+    </div>
+    <div class="card">
+      <h3>Would you rather? 👀</h3>
+      <p id="wouldQuestion">Have a personal chef for life OR never wash dishes again?</p>
+      <button class="btn sky" onclick="wouldAnswer()">Reveal my answer</button>
+      <div id="wouldResult" class="result" hidden></div>
+    </div>
+    <div class="card">
+      <h3>Which one of us? 😂</h3>
+      <p id="whichQuestion">Who is more likely to laugh at the worst possible moment?</p>
+      <button class="btn pink" onclick="nextWhich()">Another question</button>
+      <div id="whichResult" class="result" hidden></div>
+    </div>
+  </section>
+
+  <!-- ════ PANEL: CHITCHAT ════ -->
+  <section id="chitchat" class="panel">
+    <div class="panel-head">
+      <div><h2>Let's Chitchat 💬</h2><div class="sub">No agenda. Just us, talking about life.</div></div>
+      <button class="back" onclick="home()">← Home</button>
+    </div>
+    <div class="card">
+      <h3>Pick a conversation starter</h3>
+      <p id="chatPrompt" style="font-size:16px;color:#2a6a90;font-style:italic;margin-bottom:14px">If we could disappear for a weekend, where would we go?</p>
+      <button class="btn" onclick="nextChat()">Give me another topic</button>
+    </div>
+    <div class="card">
+      <h3>Leave a little message</h3>
+      <textarea id="chatMessage" placeholder="Okay, so I have something to tell you..."></textarea>
+      <button class="btn sky" onclick="saveText('chatMessage','chatSaved')">Save message</button>
+      <div id="chatSaved" class="muted"></div>
+    </div>
+    <div class="card">
+      <h3>Today's tiny check-in</h3>
+      <p>What's one thing that made you smile today?</p>
+      <textarea id="checkin" placeholder="The little thing was..."></textarea>
+      <button class="btn pink" onclick="saveText('checkin','checkinSaved')">Keep this moment</button>
+      <div id="checkinSaved" class="muted"></div>
+    </div>
+  </section>
+
+  <!-- ════ PANEL: BRIDAL ════ -->
+  <section id="bridal" class="panel">
+    <div class="panel-head">
+      <div><h2>Ruma's Bridal Era 👰🏻‍♀️</h2><div class="sub">Bride mode: ON. Pressure mode: OFF.</div></div>
+      <button class="back" onclick="home()">← Home</button>
+    </div>
+    <div class="notice">A gentle reminder: you are getting married, not organizing the entire universe. You deserve to enjoy this chapter, too.</div>
+    <div class="card">
+      <h3>Brain dump — leave it here</h3>
+      <textarea id="brain" placeholder="Everything on my mind..."></textarea>
+      <button class="btn mint" onclick="saveText('brain','brainSaved')">Let it out</button>
+      <div id="brainSaved" class="muted"></div>
+    </div>
+    <div class="card">
+      <h3>What do you need right now?</h3>
+      <button class="choice" onclick="need('vent')">I need to let it out 💌</button>
+      <button class="choice" onclick="need('calm')">I need a reset 🌿</button>
+      <button class="choice" onclick="need('laugh')">Make me laugh 😂</button>
+      <button class="choice" onclick="need('support')">I need my person 🫶</button>
+      <div id="needResult" class="result" hidden></div>
+    </div>
+    <div class="card">
+      <h3>One tiny reset ✨</h3>
+      <button class="btn mint" onclick="randomReset()">Give me a break</button>
+      <div id="resetResult" class="result" hidden></div>
+    </div>
+    <div class="card">
+      <h3>Bestie SOS 🚨</h3>
+      <a class="btn" href="https://wa.me/" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none">I need my bestie</a>
+      <p class="muted" style="margin-top:8px">Add your WhatsApp number to the link before gifting.</p>
+    </div>
+  </section>
+
+  <!-- ════ PANEL: CHALLENGES ════ -->
+  <section id="challenges" class="panel">
+    <div class="panel-head">
+      <div><h2>Challenges 🏆</h2><div class="sub">Tiny missions. Big main-character energy.</div></div>
+      <button class="back" onclick="home()">← Home</button>
+    </div>
+    <div class="card">
+      <h3>Random challenge generator</h3>
+      <button class="btn yellow" onclick="challenge()">Give me a challenge ✨</button>
+      <div id="challengeResult" class="result" hidden></div>
+    </div>
+    <div class="card">
+      <h3>Soft-life challenge 🌸</h3>
+      <p>Take 10 minutes today to do something just because it makes you happy. No productivity allowed.</p>
+    </div>
+    <div class="card">
+      <h3>Bestie challenge 💜</h3>
+      <p>Send your bestie a voice note telling her one thing you appreciate about her. Extra points for being dramatic.</p>
+    </div>
+  </section>
+
+  <!-- ════ PANEL: OPEN WHEN ════ -->
+  <section id="openwhen" class="panel">
+    <div class="panel-head">
+      <div><h2>Open When... 💌</h2><div class="sub">A little note, exactly when you need it.</div></div>
+      <button class="back" onclick="home()">← Home</button>
+    </div>
+    <div class="grid">
+      <button class="tile" onclick="openNote('sad')"><span class="emoji">🌧️</span><strong>You're sad</strong><small>Open this gently.</small></button>
+      <button class="tile" onclick="openNote('overwhelmed')"><span class="emoji">🫧</span><strong>It's too much</strong><small>One thing at a time.</small></button>
+      <button class="tile" onclick="openNote('miss')"><span class="emoji">💙</span><strong>You miss me</strong><small>Obviously, I miss you too.</small></button>
+      <button class="tile" onclick="openNote('laugh')"><span class="emoji">😂</span><strong>You need a laugh</strong><small>Emergency silliness.</small></button>
+      <button class="tile" onclick="openNote('proud')"><span class="emoji">🌷</span><strong>You need a reminder</strong><small>Look how far you've come.</small></button>
+      <button class="tile" onclick="openNote('love')"><span class="emoji">💌</span><strong>You need love</strong><small>A hug in words.</small></button>
+    </div>
+    <div id="openNoteResult" class="open-letter" hidden></div>
+  </section>
+
+  <div class="footer">Made with a ridiculous amount of love for <strong>Ruma</strong> ♡</div>
+</div><!-- /wrap -->
+</div><!-- /appScreen -->
+
+<!-- Supabase JS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ══════════════════════════════
+   SUPABASE SETUP
+══════════════════════════════ */
+const SUPABASE_URL = 'https://krwuyqjnvxcxxbpmadhc.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_0UMVnUkjvuUDcEctUYz0eA_o8DDlELB';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+/* Current user state */
+let currentUser = null;
+let currentRole = null;
+
+/* ══════════════════════════════
+   BOOT — check existing session
+══════════════════════════════ */
+async function boot() {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      await loadProfile(session.user);
+      showApp();
+    } else {
+      showAuth();
+    }
+  } catch(err) {
+    console.error('Boot error:', err);
+    showAuth();
+  }
+}
+
+/* ══════════════════════════════
+   AUTH ACTIONS
+══════════════════════════════ */
+async function signIn() {
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const btn = document.getElementById('loginBtn');
+  const errEl = document.getElementById('authError');
+
+  if (!email || !password) {
+    showAuthError('Please fill in both fields.');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Signing in…';
+  errEl.style.display = 'none';
+
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    await loadProfile(data.user);
+    showApp();
+  } catch(err) {
+    btn.disabled = false;
+    btn.textContent = 'Enter my universe →';
+    showAuthError(friendlyError(err.message));
+  }
+}
+
+async function signOut() {
+  await sb.auth.signOut();
+  currentUser = null;
+  currentRole = null;
+  showAuth();
+  home();
+}
+
+function showAuthError(msg) {
+  const el = document.getElementById('authError');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function friendlyError(msg) {
+  if (msg.includes('Invalid login')) return 'Wrong email or password. Try again.';
+  if (msg.includes('Email not confirmed')) return 'Please confirm your email first.';
+  return 'Something went wrong. Please try again.';
+}
+
+/* Allow Enter key on password field */
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('authPassword').addEventListener('keydown', e => {
+    if (e.key === 'Enter') signIn();
+  });
+  document.getElementById('authEmail').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('authPassword').focus();
+  });
+});
+
+/* ══════════════════════════════
+   PROFILE
+══════════════════════════════ */
+async function loadProfile(user) {
+  currentUser = user;
+  try {
+    const { data, error } = await sb
+      .from('profiles')
+      .select('display_name, role')
+      .eq('id', user.id)
+      .single();
+
+    if (error) throw error;
+    currentRole = data.role;
+    updateUserUI(data.display_name, data.role);
+  } catch(err) {
+    console.error('Profile load error:', err);
+    // Fallback: use email prefix
+    const name = user.email.split('@')[0];
+    currentRole = 'pending';
+    updateUserUI(name, 'pending');
+  }
+}
+
+function updateUserUI(name, role) {
+  // User chip
+  const chip = document.getElementById('userChip');
+  chip.className = 'user-chip ' + (role === 'creator' ? 'creator' : role === 'ruma' ? 'ruma' : '');
+  document.getElementById('userChipName').textContent = name;
+
+  // Hero greeting
+  const greeting = document.getElementById('heroGreeting');
+  if (role === 'ruma') {
+    greeting.textContent = '💙 Hey Ruma! This is your universe.';
+    greeting.style.display = 'inline-block';
+  } else if (role === 'creator') {
+    greeting.textContent = '✏️ Creator view — editing mode.';
+    greeting.style.display = 'inline-block';
+  }
+}
+
+/* ══════════════════════════════
+   SHOW / HIDE SCREENS
+══════════════════════════════ */
+function showApp() {
+  document.getElementById('loadingScreen').style.opacity = '0';
+  setTimeout(() => document.getElementById('loadingScreen').style.display = 'none', 400);
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display = 'block';
+  renderMemories();
+  renderSongs();
+}
+
+function showAuth() {
+  document.getElementById('loadingScreen').style.opacity = '0';
+  setTimeout(() => document.getElementById('loadingScreen').style.display = 'none', 400);
+  document.getElementById('authScreen').style.display = 'flex';
+  document.getElementById('appScreen').style.display = 'none';
+  // Reset login form
+  document.getElementById('loginBtn').disabled = false;
+  document.getElementById('loginBtn').textContent = 'Enter my universe →';
+  document.getElementById('authError').style.display = 'none';
+}
+
+/* Listen for auth state changes (e.g. session expiry) */
+sb.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_OUT') {
+    showAuth();
+  }
+});
+
+/* ══════════════════════════════
+   APP NAVIGATION
+══════════════════════════════ */
+function openPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById('homeGrid').style.display = 'none';
+  document.getElementById('mainHeading').style.display = 'none';
+  document.getElementById(id).scrollIntoView({behavior:'smooth', block:'start'});
+}
+function home() {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('homeGrid').style.display = 'grid';
+  document.getElementById('mainHeading').style.display = 'flex';
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ══════════════════════════════
+   FEATURES (localStorage for now)
+══════════════════════════════ */
+const STORE = 'rumaUniverseV3';
+function readStore() {
+  try { return JSON.parse(localStorage.getItem(STORE) || '{"memories":[],"songs":[]}') }
+  catch(e) { return {memories:[], songs:[]} }
+}
+function writeStore(data) {
+  try { localStorage.setItem(STORE, JSON.stringify(data)) } catch(e){}
+}
+
+function saveText(inputId, outId) {
+  const v = document.getElementById(inputId).value;
+  document.getElementById(outId).textContent = v ? 'Saved ♡' : 'Write a little something first.';
+}
+
+function reveal(id, n) {
+  const a = [
+    'Take a birthday selfie and save it for your future self 📸',
+    'Choose one thing you want to say YES to this year ✨',
+    'Send your bestie a voice note saying one thing you love about her 💜'
+  ];
+  const e = document.getElementById(id);
+  e.hidden = false; e.textContent = a[n];
+}
+
+function preview(input, id) {
+  const f = input.files[0];
+  if (f) { const r = new FileReader(); r.onload = e => document.getElementById(id).src = e.target.result; r.readAsDataURL(f); }
+}
+
+function renderMemories() {
+  const list = document.getElementById('memoryList');
+  if (!list) return;
+  list.innerHTML = '';
+  readStore().memories.forEach(m => {
+    const d = document.createElement('div');
+    d.className = 'memory-item';
+    d.innerHTML = `<b>${m.title}</b><div>${m.text}</div>`;
+    list.append(d);
+  });
+}
+function addMemory() {
+  const t = document.getElementById('memoryTitle').value;
+  const x = document.getElementById('memoryText').value;
+  if (!t && !x) return;
+  const data = readStore();
+  data.memories.unshift({title: t || 'A little memory', text: x});
+  writeStore(data); renderMemories();
+  document.getElementById('memoryTitle').value = '';
+  document.getElementById('memoryText').value = '';
+}
+
+function renderSongs() {
+  const list = document.getElementById('songList');
+  if (!list) return;
+  list.innerHTML = '';
+  readStore().songs.forEach(s => {
+    const d = document.createElement('div');
+    d.className = 'memory-item';
+    d.innerHTML = `<b><a href="${s.url}" target="_blank" rel="noopener" style="color:#2a6a90">${s.name}</a></b><div>${s.note}</div>`;
+    list.append(d);
+  });
+}
+function addSong() {
+  const n = document.getElementById('songName').value;
+  const u = document.getElementById('songUrl').value;
+  const note = document.getElementById('songNote').value;
+  if (!n || !u) return;
+  try {
+    const p = new URL(u);
+    if (!['http:','https:'].includes(p.protocol)) return alert('Please enter a valid https:// link.');
+  } catch(e) { return alert('Please enter a valid song link.'); }
+  const data = readStore();
+  data.songs.unshift({name: n, url: u, note});
+  writeStore(data); renderSongs();
+  ['songName','songUrl','songNote'].forEach(i => document.getElementById(i).value = '');
+}
+
+const pairs = [['Coffee date ☕','Pajama day 🧸'],['Beach sunset 🌅','Mountain cabin 🏡'],['Plan everything 📋','Go with the flow 🌊'],['Sweet treat 🍰','Salty snack 🍟'],['Night out 💃','Cozy night in 🧸'],['Voice notes 🎙️','Long phone calls ☎️']];
+let pi = 0;
+function nextThis() { pi=(pi+1)%pairs.length; document.getElementById('optionA').textContent=pairs[pi][0]; document.getElementById('optionB').textContent=pairs[pi][1]; document.getElementById('thisThatResult').textContent=''; }
+function chooseThis(n) { document.getElementById('thisThatResult').textContent='Your choice: '+pairs[pi][n]+' ♡'; }
+function wouldAnswer() { const a=['Have a personal chef for life — food is love. 🍝','Never wash dishes again. That is a real luxury. 😂']; const e=document.getElementById('wouldResult'); e.hidden=false; e.textContent=a[Math.floor(Math.random()*a.length)]; }
+const whichQs=['Who is more likely to laugh at the worst possible moment?','Who takes longer to get ready?','Who would survive longer on a spontaneous trip?','Who sends the most chaotic voice notes?','Who is more likely to cry at a movie?','Who would win in a staring contest?'];
+function nextWhich() { const e=document.getElementById('whichQuestion'); e.textContent=whichQs[Math.floor(Math.random()*whichQs.length)]; const r=document.getElementById('whichResult'); r.hidden=false; r.textContent='Point at each other and defend your answer. No diplomatic answers allowed. 😂'; }
+const chats=['If we could disappear for a weekend, where would we go?','What is a tiny thing you wish you did more often?','Which memory instantly makes you smile?','What would our dream girls\' day look like?','What is something you are looking forward to?','If this month had a theme song, what would it be?','What is one thing you want to tell me but keep forgetting to?','If you could relive one day of this year, which would it be?'];
+function nextChat() { document.getElementById('chatPrompt').textContent=chats[Math.floor(Math.random()*chats.length)]; }
+function need(n) { const s={vent:'You do not need to make it sound pretty. Tell me the messy version. I am listening. 💌',calm:'Unclench your jaw. Drop your shoulders. Breathe in for 4, out for 6. Repeat five times. Nothing else is required right now.',laugh:'Your mission: send me the most unhinged photo in your camera roll. No context. 😂',support:'This is your reminder: you do not have to carry everything alone. Call your bestie. Even if all you can say is "hi". 🫶'}; const e=document.getElementById('needResult'); e.hidden=false; e.textContent=s[n]; }
+function randomReset() { const a=['Put your phone down and look out of a window for 3 minutes.','Make a drink you love and enjoy it sitting down — no multitasking.','Play one favorite song and stretch until it ends.','Step outside, feel the air, and take five slow breaths.','Send someone you love a tiny voice note.','Close your eyes for 60 seconds. You are not behind.']; const e=document.getElementById('resetResult'); e.hidden=false; e.textContent=a[Math.floor(Math.random()*a.length)]; }
+function challenge() { const a=['Send me a selfie with your most dramatic expression.','Find the oldest photo of us in your gallery.','Dance to the chorus of the next song you hear.','Tell me one tiny thing that made you happy today.','Send me three emojis that describe our friendship.','Take a 5-minute break and do not feel guilty about it.','Wear your favorite color today and own it.','Make a tiny plan for something fun this week.','Write down one thing you are proud of yourself for.','Send a voice note to someone you have been meaning to reach out to.']; const e=document.getElementById('challengeResult'); e.hidden=false; e.textContent=a[Math.floor(Math.random()*a.length)]; }
+function openNote(n) { const a={sad:'Hey you. You do not have to be okay every minute. Take your time, feel what you feel, and remember you are loved through all of it. ♡',overwhelmed:'Pause. You are one person, not an entire wedding-planning committee. Pick just one next step — or pick rest. The rest can wait.',miss:'I hope you know I am only one call, one voice note, and one ridiculous meme away. Missing you right back. 💙',laugh:'Emergency instruction: remember our most embarrassing moment together. If that does not work, call me. I will make it worse. 😂',proud:'Look at you. Growing, figuring things out, showing up, and making it through days you thought would be too much. I am so proud of you.',love:'If I could package a hug and send it through this screen, I would. Until then: you are precious, you are seen, and you are so, so loved.'}; const e=document.getElementById('openNoteResult'); e.hidden=false; e.textContent=a[n]; e.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+
+/* ══════════════════════════════
+   START
+══════════════════════════════ */
+boot();
+</script>
+</body>
+</html>
