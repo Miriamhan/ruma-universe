@@ -887,15 +887,88 @@ function home() {
 }
 
 /* ══════════════════════════════
-   FEATURES (localStorage for now)
+   FEATURES (Supabase shared_content)
 ══════════════════════════════ */
-const STORE = 'rumaUniverseV3';
-function readStore() {
-  try { return JSON.parse(localStorage.getItem(STORE) || '{"memories":[],"songs":[]}') }
-  catch(e) { return {memories:[], songs:[]} }
+
+async function renderMemories() {
+  const list = document.getElementById('memoryList');
+  if (!list) return;
+  list.innerHTML = '<em style="color:#888;font-size:.9rem">Loading…</em>';
+  const { data, error } = await sb.from('shared_content')
+    .select('id,title,body,created_at')
+    .eq('content_type','memory')
+    .order('created_at', { ascending: false });
+  if (error) { list.innerHTML = '<em style="color:#c00">Could not load memories.</em>'; return; }
+  list.innerHTML = '';
+  if (!data.length) { list.innerHTML = '<em style="color:#888;font-size:.9rem">No memories yet — add the first one! ♡</em>'; return; }
+  data.forEach(m => {
+    const d = document.createElement('div');
+    d.className = 'memory-item';
+    d.innerHTML = `<b>${m.title}</b><div>${m.body||''}</div>`;
+    list.append(d);
+  });
 }
-function writeStore(data) {
-  try { localStorage.setItem(STORE, JSON.stringify(data)) } catch(e){}
+
+async function addMemory() {
+  const t = document.getElementById('memoryTitle').value.trim();
+  const x = document.getElementById('memoryText').value.trim();
+  if (!t && !x) return;
+  const { error } = await sb.from('shared_content').insert({
+    category: 'stories',
+    content_type: 'memory',
+    title: t || 'A little memory',
+    body: x,
+    data: {},
+    is_original: true,
+    created_by: (await sb.auth.getUser()).data.user.id
+  });
+  if (error) { alert('Could not save memory: ' + error.message); return; }
+  document.getElementById('memoryTitle').value = '';
+  document.getElementById('memoryText').value = '';
+  renderMemories();
+}
+
+async function renderSongs() {
+  const list = document.getElementById('songList');
+  if (!list) return;
+  list.innerHTML = '<em style="color:#888;font-size:.9rem">Loading…</em>';
+  const { data, error } = await sb.from('shared_content')
+    .select('id,title,body,external_url,created_at')
+    .eq('content_type','song')
+    .order('created_at', { ascending: false });
+  if (error) { list.innerHTML = '<em style="color:#c00">Could not load songs.</em>'; return; }
+  list.innerHTML = '';
+  if (!data.length) { list.innerHTML = '<em style="color:#888;font-size:.9rem">No songs yet — add the first one! 🎵</em>'; return; }
+  data.forEach(s => {
+    const d = document.createElement('div');
+    d.className = 'memory-item';
+    d.innerHTML = `<b><a href="${s.external_url}" target="_blank" rel="noopener" style="color:#2a6a90">${s.title}</a></b><div>${s.body||''}</div>`;
+    list.append(d);
+  });
+}
+
+async function addSong() {
+  const n = document.getElementById('songName').value.trim();
+  const u = document.getElementById('songUrl').value.trim();
+  const note = document.getElementById('songNote').value.trim();
+  if (!n || !u) return;
+  try {
+    const p = new URL(u);
+    if (!['http:','https:'].includes(p.protocol)) return alert('Please enter a valid https:// link.');
+  } catch(e) { return alert('Please enter a valid song link.'); }
+  const { error } = await sb.from('shared_content').insert({
+    category: 'stories',
+    content_type: 'song',
+    title: n,
+    body: note,
+    external_url: u,
+    data: {},
+    is_original: false,
+    created_by: (await sb.auth.getUser()).data.user.id
+  });
+  if (error) { alert('Could not save song: ' + error.message); return; }
+  ['songName','songUrl','songNote'].forEach(i => document.getElementById(i).value = '');
+  renderSongs();
 }
 
 function saveText(inputId, outId) {
@@ -918,53 +991,6 @@ function preview(input, id) {
   if (f) { const r = new FileReader(); r.onload = e => document.getElementById(id).src = e.target.result; r.readAsDataURL(f); }
 }
 
-function renderMemories() {
-  const list = document.getElementById('memoryList');
-  if (!list) return;
-  list.innerHTML = '';
-  readStore().memories.forEach(m => {
-    const d = document.createElement('div');
-    d.className = 'memory-item';
-    d.innerHTML = `<b>${m.title}</b><div>${m.text}</div>`;
-    list.append(d);
-  });
-}
-function addMemory() {
-  const t = document.getElementById('memoryTitle').value;
-  const x = document.getElementById('memoryText').value;
-  if (!t && !x) return;
-  const data = readStore();
-  data.memories.unshift({title: t || 'A little memory', text: x});
-  writeStore(data); renderMemories();
-  document.getElementById('memoryTitle').value = '';
-  document.getElementById('memoryText').value = '';
-}
-
-function renderSongs() {
-  const list = document.getElementById('songList');
-  if (!list) return;
-  list.innerHTML = '';
-  readStore().songs.forEach(s => {
-    const d = document.createElement('div');
-    d.className = 'memory-item';
-    d.innerHTML = `<b><a href="${s.url}" target="_blank" rel="noopener" style="color:#2a6a90">${s.name}</a></b><div>${s.note}</div>`;
-    list.append(d);
-  });
-}
-function addSong() {
-  const n = document.getElementById('songName').value;
-  const u = document.getElementById('songUrl').value;
-  const note = document.getElementById('songNote').value;
-  if (!n || !u) return;
-  try {
-    const p = new URL(u);
-    if (!['http:','https:'].includes(p.protocol)) return alert('Please enter a valid https:// link.');
-  } catch(e) { return alert('Please enter a valid song link.'); }
-  const data = readStore();
-  data.songs.unshift({name: n, url: u, note});
-  writeStore(data); renderSongs();
-  ['songName','songUrl','songNote'].forEach(i => document.getElementById(i).value = '');
-}
 
 const pairs = [['Coffee date ☕','Pajama day 🧸'],['Beach sunset 🌅','Mountain cabin 🏡'],['Plan everything 📋','Go with the flow 🌊'],['Sweet treat 🍰','Salty snack 🍟'],['Night out 💃','Cozy night in 🧸'],['Voice notes 🎙️','Long phone calls ☎️']];
 let pi = 0;
