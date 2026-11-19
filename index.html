@@ -971,9 +971,24 @@ async function addSong() {
   renderSongs();
 }
 
-function saveText(inputId, outId) {
-  const v = document.getElementById(inputId).value;
-  document.getElementById(outId).textContent = v ? 'Saved ♡' : 'Write a little something first.';
+async function saveText(inputId, outId) {
+  const el = document.getElementById(inputId);
+  const v = el.value.trim();
+  const out = document.getElementById(outId);
+  if (!v) { out.textContent = 'Write a little something first.'; return; }
+  out.textContent = 'Saving…';
+  const categoryMap = { wish: 'birthday', chatMessage: 'chitchat', checkin: 'chitchat', brain: 'chitchat' };
+  const titleMap = { wish: 'Birthday wish', chatMessage: 'A message', checkin: 'A moment', brain: 'Brain dump' };
+  const { error } = await sb.from('private_entries').insert({
+    category: categoryMap[inputId] || 'chitchat',
+    title: titleMap[inputId] || 'Note',
+    body: v,
+    data: {},
+    owner_id: (await sb.auth.getUser()).data.user.id
+  });
+  if (error) { out.textContent = 'Could not save: ' + error.message; return; }
+  out.textContent = 'Saved ♡';
+  el.value = '';
 }
 
 function reveal(id, n) {
