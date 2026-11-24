@@ -977,7 +977,7 @@ async function saveText(inputId, outId) {
   const out = document.getElementById(outId);
   if (!v) { out.textContent = 'Write a little something first.'; return; }
   out.textContent = 'Saving…';
-  const categoryMap = { wish: 'birthday', chatMessage: 'chitchat', checkin: 'chitchat', brain: 'chitchat' };
+  const categoryMap = { wish: 'journal', chatMessage: 'private_note', checkin: 'mood', brain: 'brain_dump' };
   const titleMap = { wish: 'Birthday wish', chatMessage: 'A message', checkin: 'A moment', brain: 'Brain dump' };
   const { error } = await sb.from('private_entries').insert({
     category: categoryMap[inputId] || 'chitchat',
