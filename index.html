@@ -2231,6 +2231,19 @@ function wireStories() {
       body.appendChild(a);
       li.appendChild(ico);
       li.appendChild(body);
+      (function(entryId, el) {
+        var del = document.createElement("button");
+        del.textContent = "×";
+        del.style.cssText = "margin-left:auto;background:none;border:none;font-size:1.1rem;color:oklch(0.55 0.04 285 / 0.4);cursor:pointer;padding:0 4px;line-height:1;font-weight:700;flex-shrink:0";
+        del.title = "Remove";
+        del.addEventListener("click", function() {
+          sb.from("shared_content").delete().eq("id", entryId).then(function(res) {
+            if (!res.error) el.remove();
+            else toast("Couldn't remove — try again");
+          });
+        });
+        el.appendChild(del);
+      })(items[i].id, li);
       songs.appendChild(li);
     }
   }
@@ -2317,6 +2330,22 @@ function wireStories() {
         cap.textContent = meta.caption;
         div.appendChild(cap);
       }
+      // delete button
+      (function(entryId, el) {
+        var del = document.createElement("button");
+        del.textContent = "×";
+        del.style.cssText = "position:absolute;top:4px;left:6px;background:none;border:none;font-size:1rem;color:oklch(0.55 0.04 285 / 0.4);cursor:pointer;padding:0;line-height:1;font-weight:700";
+        del.title = "Remove";
+        del.addEventListener("click", function(e) {
+          e.stopPropagation();
+          if (!confirm("Remove this photo?")) return;
+          sb.from("shared_content").delete().eq("id", entryId).then(function(res) {
+            if (!res.error) el.remove();
+            else toast("Couldn't remove — try again");
+          });
+        });
+        el.appendChild(del);
+      })(it.id, div);
       pgrid.appendChild(div);
     }
   }
