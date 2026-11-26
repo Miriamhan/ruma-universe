@@ -1597,7 +1597,7 @@ async function saveFinish() {
   if (!answer) return;
   var prompt = FINISH_PROMPTS[finishIdx].text;
   if (sb && currentUser) {
-    await sb.from('private_entries').insert({ category: 'journal', content: answer, title: prompt });
+    await sb.from('private_entries').insert({ category: 'journal', body: answer, title: prompt });
   }
   finishSaved.unshift({ prompt: prompt, text: answer });
   renderFinishList();
@@ -1609,7 +1609,7 @@ async function loadFinishSaved() {
   document.getElementById('finish-list').innerHTML = '';
   if (!sb || !currentUser) return;
   var res = await sb.from('private_entries').select('*').eq('category', 'journal').order('created_at', { ascending: false });
-  if (res.data) { finishSaved = res.data.map(function(r){ return { prompt: r.title || '', text: r.content }; }); }
+  if (res.data) { finishSaved = res.data.map(function(r){ return { prompt: r.title || '', text: r.body }; }); }
   renderFinishList();
 }
 
@@ -1821,7 +1821,7 @@ async function saveEmoji() {
   var note = document.getElementById('emoji-note').value.trim();
   if (!emoji) { showToast('Pick an emoji first! 💜'); return; }
   if (sb && currentUser) {
-    await sb.from('private_entries').insert({ category: 'private_note', content: 'emoji::' + emoji + '|' + note });
+    await sb.from('private_entries').insert({ category: 'private_note', body: 'emoji::' + emoji + '|' + note });
   }
   emojiEntries.unshift({ emoji: emoji, note: note });
   document.getElementById('emoji-pick').value = '';
@@ -1832,10 +1832,10 @@ async function saveEmoji() {
 
 async function loadEmojiCollection() {
   if (!sb || !currentUser) return;
-  var res = await sb.from('private_entries').select('*').eq('category', 'private_note').ilike('content', 'emoji::%').order('created_at', { ascending: false });
+  var res = await sb.from('private_entries').select('*').eq('category', 'private_note').ilike('body', 'emoji::%').order('created_at', { ascending: false });
   if (res.data) {
     emojiEntries = res.data.map(function(r) {
-      var parts = r.content.replace('emoji::', '').split('|');
+      var parts = (r.body || '').replace('emoji::', '').split('|');
       return { emoji: parts[0] || '💜', note: parts.slice(1).join('|') };
     });
   }
@@ -2180,7 +2180,7 @@ function wireSaveNotes() {
         .limit(1)
         .then(function (res) {
           if (res.data && res.data.length > 0) {
-            area.value = res.data[0].content || "";
+            area.value = res.data[0].body || "";
             kept.hidden = !area.value;
           }
         });
@@ -2188,7 +2188,7 @@ function wireSaveNotes() {
       btn.addEventListener("click", function () {
         var val = area.value.trim();
         if (!val) { toast("Write a little something first ✍️"); return; }
-        sb.from("private_entries").insert({ category: category, content: val })
+        sb.from("private_entries").insert({ category: category, body: val })
           .then(function (res) {
             if (res.error) { toast("Couldn't save — try again 💙"); return; }
             kept.hidden = false;
@@ -2257,7 +2257,7 @@ function wireStories() {
         else label = host;
       } catch(e) { label = "Song"; }
     }
-    sb.from("shared_content").insert({ content_type: "song", external_url: url, body: label })
+    sb.from("shared_content").insert({ category: "shared", content_type: "song", external_url: url, body: label })
       .then(function (res) {
         if (res.error) { toast("Couldn't save — try again"); return; }
         document.getElementById("s-url").value = "";
@@ -2322,7 +2322,7 @@ function wireStories() {
     if (!ok) { toast("Please enter a valid image link."); return; }
     var meta = { by: currentUserEmail ? currentUserEmail.split("@")[0] : "someone you love" };
     if (cap) meta.caption = cap;
-    sb.from("shared_content").insert({ content_type:"photo", external_url: url, data: JSON.stringify(meta) })
+    sb.from("shared_content").insert({ category: "shared", content_type: "photo", external_url: url, data: JSON.stringify(meta) })
       .then(function(res) {
         if (res.error) { toast("Couldn't save — try again"); return; }
         document.getElementById("ph-url").value = "";
