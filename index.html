@@ -2236,7 +2236,7 @@ function wireStories() {
   }
 
   function loadSongs() {
-    sb.from("shared_content").select("*").eq("content_type", "song").order("created_at", { ascending: false })
+    sb.from("shared_content").select("*").eq("category", "stories_memories_songs").eq("content_type", "song").order("created_at", { ascending: false })
       .then(function (res) { drawSongs(res.data || []); });
   }
   loadSongs();
@@ -2257,7 +2257,7 @@ function wireStories() {
         else label = host;
       } catch(e) { label = "Song"; }
     }
-    sb.from("shared_content").insert({ category: "shared", content_type: "song", external_url: url, body: label })
+    sb.from("shared_content").insert({ category: "stories_memories_songs", content_type: "song", external_url: url, body: label })
       .then(function (res) {
         if (res.error) { toast("Error: " + (res.error.message || res.error.code || JSON.stringify(res.error))); return; }
         document.getElementById("s-url").value = "";
@@ -2308,7 +2308,7 @@ function wireStories() {
   }
 
   function loadPhotos() {
-    sb.from("shared_content").select("*").eq("content_type","photo").order("created_at",{ascending:false})
+    sb.from("shared_content").select("*").eq("category","stories_memories_songs").eq("content_type","photo").order("created_at",{ascending:false})
       .then(function(res){ drawPolaroids(res.data || []); });
   }
   loadPhotos();
@@ -2322,7 +2322,7 @@ function wireStories() {
     if (!ok) { toast("Please enter a valid image link."); return; }
     var meta = { by: currentUserEmail ? currentUserEmail.split("@")[0] : "someone you love" };
     if (cap) meta.caption = cap;
-    sb.from("shared_content").insert({ category: "shared", content_type: "photo", external_url: url, data: JSON.stringify(meta) })
+    sb.from("shared_content").insert({ category: "stories_memories_songs", content_type: "photo", external_url: url, data: JSON.stringify(meta) })
       .then(function(res) {
         if (res.error) { toast("Error: " + (res.error.message || res.error.code || JSON.stringify(res.error))); return; }
         document.getElementById("ph-url").value = "";
