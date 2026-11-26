@@ -2223,10 +2223,10 @@ function wireStories() {
       var body = document.createElement("div");
       body.style.cssText = "min-width:0";
       var a = document.createElement("a");
-      a.href = items[i].title || "#";
+      a.href = items[i].external_url || "#";
       a.target = "_blank";
       a.rel = "noopener noreferrer";
-      a.textContent = items[i].content || items[i].title || "Song";
+      a.textContent = items[i].body || items[i].external_url || "Song";
       a.style.cssText = "font-weight:800;color:var(--lilac-deep)";
       body.appendChild(a);
       li.appendChild(ico);
@@ -2236,7 +2236,7 @@ function wireStories() {
   }
 
   function loadSongs() {
-    sb.from("shared_content").select("*").eq("type", "song").order("created_at", { ascending: false })
+    sb.from("shared_content").select("*").eq("content_type", "song").order("created_at", { ascending: false })
       .then(function (res) { drawSongs(res.data || []); });
   }
   loadSongs();
@@ -2257,7 +2257,7 @@ function wireStories() {
         else label = host;
       } catch(e) { label = "Song"; }
     }
-    sb.from("shared_content").insert({ type: "song", title: url, content: label })
+    sb.from("shared_content").insert({ content_type: "song", external_url: url, body: label })
       .then(function (res) {
         if (res.error) { toast("Couldn't save — try again"); return; }
         document.getElementById("s-url").value = "";
@@ -2279,7 +2279,7 @@ function wireStories() {
     for (var i = 0; i < items.length; i++) {
       var it = items[i];
       var meta = {};
-      try { meta = JSON.parse(it.content || "{}"); } catch(e) { meta = {}; }
+      try { meta = JSON.parse(it.data || it.body || "{}"); } catch(e) { meta = {}; }
       var div = document.createElement("div");
       div.className = "polaroid";
       var tape = document.createElement("span");
@@ -2292,7 +2292,7 @@ function wireStories() {
         div.appendChild(by);
       }
       var img = document.createElement("img");
-      img.src = it.title;
+      img.src = it.external_url || it.title || "";
       img.alt = meta.caption || "memory";
       img.onerror = function(){ this.closest(".polaroid").style.display="none"; };
       div.appendChild(img);
@@ -2308,7 +2308,7 @@ function wireStories() {
   }
 
   function loadPhotos() {
-    sb.from("shared_content").select("*").eq("type","photo").order("created_at",{ascending:false})
+    sb.from("shared_content").select("*").eq("content_type","photo").order("created_at",{ascending:false})
       .then(function(res){ drawPolaroids(res.data || []); });
   }
   loadPhotos();
@@ -2322,7 +2322,7 @@ function wireStories() {
     if (!ok) { toast("Please enter a valid image link."); return; }
     var meta = { by: currentUserEmail ? currentUserEmail.split("@")[0] : "someone you love" };
     if (cap) meta.caption = cap;
-    sb.from("shared_content").insert({ type:"photo", title: url, content: JSON.stringify(meta) })
+    sb.from("shared_content").insert({ content_type:"photo", external_url: url, data: JSON.stringify(meta) })
       .then(function(res) {
         if (res.error) { toast("Couldn't save — try again"); return; }
         document.getElementById("ph-url").value = "";
