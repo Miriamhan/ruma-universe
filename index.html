@@ -544,7 +544,7 @@ blockquote.quote{margin:0;font-family:var(--font-display);font-style:italic;font
           <div class="top"><span class="num">04</span><span class="ico">💬</span></div>
           <div class="text">
             <h3>Let's Chitchat</h3>
-            <p>No agenda. Just us, talking about life.</p>
+            <p>somethings never change no matter how we get old like اثارة الجدل</p>
             <span class="open i-blush">Step in →</span>
           </div>
           <span class="big-star" aria-hidden="true">✦</span>
@@ -1024,7 +1024,7 @@ blockquote.quote{margin:0;font-family:var(--font-display);font-style:italic;font
           <span class="emoji" aria-hidden="true">💬</span>
           <div>
             <h1 class="i-blush">Let's Chitchat</h1>
-            <p class="sub">No agenda. Just us, talking about life.</p>
+            <p class="sub">somethings never change no matter how we get old like اثارة الجدل</p>
           </div>
         </div>
       </div>
@@ -1034,7 +1034,7 @@ blockquote.quote{margin:0;font-family:var(--font-display);font-style:italic;font
       <div class="card" style="margin-top:32px">
         <span class="tape tape-strip" aria-hidden="true"></span>
         <header>
-          <div><p class="kicker i-blush">Pick a conversation starter</p></div>
+          <div><p class="kicker i-blush">مالكوا قاعدين هاديين كدة ليه تعالوا نتخانق شوية</p></div>
         </header>
         <div class="body">
           <div style="background:var(--blush);border-radius:1.5rem 1.5rem 1.5rem 4px;padding:32px 24px">
@@ -2414,9 +2414,8 @@ function wireStories() {
       var dbRes = await sb.from("shared_content").insert({ category: "stories_memories_songs", content_type: "photo", external_url: publicUrl, data: JSON.stringify(meta) });
       if (dbRes.error) { toast("Saved to storage but DB error: " + dbRes.error.message); phProgress.style.display="none"; phSave.disabled=false; phSave.style.opacity="1"; return; }
 
-      // reset for next upload
-      try { phFile.value = ""; } catch(e) {}
-      phFilename.textContent = "";
+      // reset for next upload — do NOT clear phFile.value on mobile (breaks picker)
+      phFilename.textContent = "✓ Done! Pick another to add more";
       document.getElementById("ph-cap").value = "";
       phSave.disabled = false; phSave.style.opacity = "1";
       phProgress.style.display = "none";
