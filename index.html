@@ -623,7 +623,7 @@ blockquote.quote{margin:0;font-family:var(--font-display);font-style:italic;font
           </div>
           <input class="field" id="ph-cap" placeholder="Caption… (optional)" dir="auto" style="margin-top:8px" />
           <div class="row" style="margin-top:8px">
-            <button class="btn btn-blush" id="ph-save" disabled style="opacity:.5">Pin photo 📷</button>
+            <button class="btn btn-blush" id="ph-save">Pin photo 📷</button>
           </div>
           <div id="ph-progress" style="display:none;font-size:.8rem;color:var(--muted-foreground);margin-top:6px;text-align:center">Uploading…</div>
           <div class="polaroid-grid" id="polaroid-grid"></div>
@@ -2369,29 +2369,30 @@ function wireStories() {
   var phFilename = document.getElementById("ph-filename");
   var phProgress = document.getElementById("ph-progress");
 
+  // show filename when file is picked
   phFile.addEventListener("change", function() {
     if (phFile.files && phFile.files[0]) {
       phFilename.textContent = phFile.files[0].name;
-      phSave.disabled = false;
-      phSave.style.opacity = "1";
     } else {
       phFilename.textContent = "";
-      phSave.disabled = true;
-      phSave.style.opacity = ".5";
     }
   });
 
+  // Pin photo button always enabled — validate on click
+  phSave.disabled = false;
+  phSave.style.opacity = "1";
+
   phSave.addEventListener("click", async function() {
     var file = phFile.files && phFile.files[0];
-    if (!file) { toast("Pick a photo first"); return; }
+    if (!file) { toast("Tap 'Upload photo' to pick a photo first 📷"); return; }
     var cap = document.getElementById("ph-cap").value.trim();
 
     phSave.disabled = true;
     phSave.style.opacity = ".5";
     phProgress.style.display = "block";
+    phProgress.textContent = "Uploading…";
 
     try {
-      // unique path so files don't overwrite each other
       var ext = file.name.split(".").pop() || "jpg";
       var path = Date.now() + "-" + Math.random().toString(36).slice(2) + "." + ext;
 
@@ -2411,12 +2412,13 @@ function wireStories() {
       if (cap) meta.caption = cap;
 
       var dbRes = await sb.from("shared_content").insert({ category: "stories_memories_songs", content_type: "photo", external_url: publicUrl, data: JSON.stringify(meta) });
-      if (dbRes.error) { toast("Saved to storage but DB error: " + dbRes.error.message); phProgress.style.display="none"; return; }
+      if (dbRes.error) { toast("Saved to storage but DB error: " + dbRes.error.message); phProgress.style.display="none"; phSave.disabled=false; phSave.style.opacity="1"; return; }
 
-      phFile.value = "";
+      // reset for next upload
+      try { phFile.value = ""; } catch(e) {}
       phFilename.textContent = "";
       document.getElementById("ph-cap").value = "";
-      phSave.disabled = true; phSave.style.opacity = ".5";
+      phSave.disabled = false; phSave.style.opacity = "1";
       phProgress.style.display = "none";
       loadPhotos();
       toast("Photo pinned to the scrapbook 📸");
