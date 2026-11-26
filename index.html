@@ -2279,7 +2279,10 @@ function wireStories() {
     for (var i = 0; i < items.length; i++) {
       var it = items[i];
       var meta = {};
-      try { meta = JSON.parse(it.data || it.body || "{}"); } catch(e) { meta = {}; }
+      try {
+        var raw = it.data || it.body || {};
+        meta = (typeof raw === "string") ? JSON.parse(raw) : raw;
+      } catch(e) { meta = {}; }
       var div = document.createElement("div");
       div.className = "polaroid";
       var tape = document.createElement("span");
