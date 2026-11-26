@@ -614,11 +614,18 @@ blockquote.quote{margin:0;font-family:var(--font-display);font-style:italic;font
         </header>
         <div class="body">
           <p>Add a photo — any moment worth keeping. Both of you can pin pictures here. 🎞️</p>
-          <input class="field" id="ph-url" placeholder="Paste an image link (Google Photos, iCloud, Imgur…)" type="url" />
-          <input class="field" id="ph-cap" placeholder="Caption… (optional)" dir="auto" />
-          <div class="row">
-            <button class="btn btn-blush" id="ph-save">Pin photo 📷</button>
+          <div class="row" style="gap:10px;flex-wrap:wrap">
+            <label class="btn btn-blush" id="ph-upload-label" style="cursor:pointer;position:relative;overflow:hidden">
+              📷 Upload photo
+              <input type="file" id="ph-file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%">
+            </label>
+            <span id="ph-filename" style="font-size:.82rem;color:var(--muted-foreground);align-self:center;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px"></span>
           </div>
+          <input class="field" id="ph-cap" placeholder="Caption… (optional)" dir="auto" style="margin-top:8px" />
+          <div class="row" style="margin-top:8px">
+            <button class="btn btn-blush" id="ph-save" disabled style="opacity:.5">Pin photo 📷</button>
+          </div>
+          <div id="ph-progress" style="display:none;font-size:.8rem;color:var(--muted-foreground);margin-top:6px;text-align:center">Uploading…</div>
           <div class="polaroid-grid" id="polaroid-grid"></div>
         </div>
       </div>
@@ -2356,23 +2363,68 @@ function wireStories() {
   }
   loadPhotos();
 
-  document.getElementById("ph-save").addEventListener("click", function() {
-    var url = document.getElementById("ph-url").value.trim();
+  // Photo upload — file picker wires save button
+  var phFile = document.getElementById("ph-file");
+  var phSave = document.getElementById("ph-save");
+  var phFilename = document.getElementById("ph-filename");
+  var phProgress = document.getElementById("ph-progress");
+
+  phFile.addEventListener("change", function() {
+    if (phFile.files && phFile.files[0]) {
+      phFilename.textContent = phFile.files[0].name;
+      phSave.disabled = false;
+      phSave.style.opacity = "1";
+    } else {
+      phFilename.textContent = "";
+      phSave.disabled = true;
+      phSave.style.opacity = ".5";
+    }
+  });
+
+  phSave.addEventListener("click", async function() {
+    var file = phFile.files && phFile.files[0];
+    if (!file) { toast("Pick a photo first"); return; }
     var cap = document.getElementById("ph-cap").value.trim();
-    if (!url) { toast("Paste a photo link first"); return; }
-    var ok = false;
-    try { var u = new URL(url); ok = u.protocol === "http:" || u.protocol === "https:"; } catch(e) { ok = false; }
-    if (!ok) { toast("Please enter a valid image link."); return; }
-    var meta = { by: currentUserEmail ? currentUserEmail.split("@")[0] : "someone you love" };
-    if (cap) meta.caption = cap;
-    sb.from("shared_content").insert({ category: "stories_memories_songs", content_type: "photo", external_url: url, data: JSON.stringify(meta) })
-      .then(function(res) {
-        if (res.error) { toast("Error: " + (res.error.message || res.error.code || JSON.stringify(res.error))); return; }
-        document.getElementById("ph-url").value = "";
-        document.getElementById("ph-cap").value = "";
-        loadPhotos();
-        toast("Photo pinned to the scrapbook");
-      });
+
+    phSave.disabled = true;
+    phSave.style.opacity = ".5";
+    phProgress.style.display = "block";
+
+    try {
+      // unique path so files don't overwrite each other
+      var ext = file.name.split(".").pop() || "jpg";
+      var path = Date.now() + "-" + Math.random().toString(36).slice(2) + "." + ext;
+
+      var uploadRes = await sb.storage.from("photos").upload(path, file, { upsert: false });
+      if (uploadRes.error) {
+        toast("Upload failed: " + (uploadRes.error.message || JSON.stringify(uploadRes.error)));
+        phSave.disabled = false; phSave.style.opacity = "1";
+        phProgress.style.display = "none";
+        return;
+      }
+
+      var urlRes = sb.storage.from("photos").getPublicUrl(path);
+      var publicUrl = urlRes.data && urlRes.data.publicUrl;
+      if (!publicUrl) { toast("Couldn't get photo URL — try again"); phSave.disabled=false; phSave.style.opacity="1"; phProgress.style.display="none"; return; }
+
+      var meta = { by: currentUserEmail ? currentUserEmail.split("@")[0] : "someone you love" };
+      if (cap) meta.caption = cap;
+
+      var dbRes = await sb.from("shared_content").insert({ category: "stories_memories_songs", content_type: "photo", external_url: publicUrl, data: JSON.stringify(meta) });
+      if (dbRes.error) { toast("Saved to storage but DB error: " + dbRes.error.message); phProgress.style.display="none"; return; }
+
+      phFile.value = "";
+      phFilename.textContent = "";
+      document.getElementById("ph-cap").value = "";
+      phSave.disabled = true; phSave.style.opacity = ".5";
+      phProgress.style.display = "none";
+      loadPhotos();
+      toast("Photo pinned to the scrapbook 📸");
+    } catch(err) {
+      toast("Something went wrong: " + (err.message || err));
+      phSave.disabled = false; phSave.style.opacity = "1";
+      phProgress.style.display = "none";
+    }
   });
 
   // Quote reveal
