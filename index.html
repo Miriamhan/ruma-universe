@@ -2295,9 +2295,20 @@ function wireStories() {
         div.appendChild(by);
       }
       var img = document.createElement("img");
-      img.src = it.external_url || it.title || "";
+      var photoUrl = it.external_url || it.title || "";
+      img.src = photoUrl;
       img.alt = meta.caption || "memory";
-      img.onerror = function(){ this.closest(".polaroid").style.display="none"; };
+      img.style.cssText = "width:100%;height:100%;object-fit:cover;display:block";
+      img.onerror = function(){
+        this.style.display = "none";
+        var ph = document.createElement("a");
+        ph.href = photoUrl;
+        ph.target = "_blank";
+        ph.rel = "noopener noreferrer";
+        ph.style.cssText = "display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:6px;text-decoration:none;color:var(--muted-foreground);font-size:.8rem;padding:8px;text-align:center";
+        ph.innerHTML = '<span style="font-size:2rem">🖼️</span><span>Tap to open photo</span>';
+        this.parentNode.appendChild(ph);
+      };
       div.appendChild(img);
       if (meta.caption) {
         var cap = document.createElement("span");
